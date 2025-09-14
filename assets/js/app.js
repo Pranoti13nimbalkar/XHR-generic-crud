@@ -28,16 +28,16 @@ const templating=(arr)=>{
                  <div class="col-md-4 mb-4">
                 <div class="card h-100" id= '${blog.id}'>
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h3 class="m-0">'${blog.userName}'</h3>
-                        <h4 class="m-0">'${blog.userId}' </h4>
+                        <h3 class="m-0">${blog.userName}</h3>
+                        <h4 class="m-0">${blog.userId} </h4>
                     </div>
                     <div class="card-body">
-                         <h4 class="m-0">'${blog.title}'</h4>
-                         <p class="m-0">'${blog.blogDesc}'</p>
+                         <h4 class="m-0">${blog.title}</h4>
+                         <p class="m-0">${blog.blogDesc}</p>
                     </div>
                     <div class="card-footer d-flex justify-content-between align-items-center">
-                           <i class="fa-solid fa-pen-to-square fa-2x text-success"></i>
-                           <i class="fa-solid fa-trash fa-2x text-danger"></i>
+                           <i class="fa-solid fa-pen-to-square fa-2x text-success" role="button"></i>
+                           <i class="fa-solid fa-trash fa-2x text-danger" role="button"></i>
                            <i class="fa-solid fa-thumbs-up fa-2x text-primary"></i>
                     </div>
                 </div>
@@ -61,8 +61,15 @@ const makeApiCall = (methodeName, api_url, msgBody=null)=>{
                     }
                     templating(BlogArr)
                 }
+            }else{
+                // this GET for single
             }
-        }else{
+        }else if(methodeName === 'POST'){
+            const id = res.name;
+            createBlog({...msgBody, id})
+              
+        }
+        else{
             snackbar('error', 'error')
         }
     }
@@ -71,3 +78,42 @@ const makeApiCall = (methodeName, api_url, msgBody=null)=>{
 }
 
 makeApiCall('GET', POST_URL, null)
+
+const onSubmitBlog=(eve)=>{
+    eve.preventDefault();
+
+    let blogPostObj={
+        userName:userNameControl.value,
+        userId: userIdControl.value,
+        title:titleControl.value,
+        blogDesc:blogDescControl.value,
+    }
+    cl(blogPostObj);
+    blogForm.reset();
+    makeApiCall('POST', POST_URL, blogPostObj)
+}
+
+const createBlog =(blogPostObj)=>{
+  let col = document.createElement('div');
+  col.classList = 'col-md-4 mb-4';
+  col.innerHTML= `
+                  <div class="card h-100" id= '${blogPostObj.id}'>
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3 class="m-0">'${blogPostObj.userName}'</h3>
+                        <h4 class="m-0">'${blogPostObj.userId}' </h4>
+                    </div>
+                    <div class="card-body">
+                         <h4 class="m-0">'${blogPostObj.title}'</h4>
+                         <p class="m-0">'${blogPostObj.blogDesc}'</p>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between align-items-center">
+                           <i class="fa-solid fa-pen-to-square fa-2x text-success" role="button"></i>
+                           <i class="fa-solid fa-trash fa-2x text-danger" role="button"></i>
+                           <i class="fa-solid fa-thumbs-up fa-2x text-primary"></i>
+                    </div>
+                </div>
+                  
+  `
+}
+
+blogForm.addEventListener('submit', onSubmitBlog)
