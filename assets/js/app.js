@@ -10,7 +10,7 @@ const blogUpdateBtn = document.getElementById('blogUpdateBtn');
 const blogContainer = document.getElementById('blogContainer');
 
 BASE_URL = 'https://xhr-crud-machinetest-default-rtdb.firebaseio.com';
-POST_URL=`${BASE_URL}/blogs.json`;
+POST_URL=`${BASE_URL}/posts.json`;
 
 const snackbar = (masg, icon)=>{
     swal.fire(
@@ -49,8 +49,9 @@ const templating=(arr)=>{
 
 const onEdit=(ele)=>{
 let EDIT_ID = ele.closest('.card').id;
+cl(EDIT_ID)
 localStorage.setItem('EDIT_ID',EDIT_ID);
-let EDIT_URL=`${BASE_URL}/blogs/${EDIT_ID}.json`;
+let EDIT_URL=`${BASE_URL}/posts/${EDIT_ID}.json`;
 makeApiCall('GET', EDIT_URL);
 }
 
@@ -69,7 +70,7 @@ const patchData= (res)=>{
 
 const onUpdateBLog=()=>{
     let UPDATED_ID= localStorage.getItem('EDIT_ID');
-    let UPDATED_URL= `${BASE_URL}/blogs/${UPDATED_ID}.json`;
+    let UPDATED_URL= `${BASE_URL}/posts/${UPDATED_ID}.json`;
     let UPDATED_OBJ={
        userName:userNameControl.value,
         userId: userIdControl.value,
@@ -92,6 +93,32 @@ const updateOnUI=(msgBody)=>{
     blogUpdateBtn.classList.add('d-none')
 
 }
+
+const onRemove = (ele)=>{
+    Swal.fire({
+  title: "Do you want to delete blog?",
+  icon: "warning",
+  showCancelButton: true,
+  confirmButtonColor: "#3085d6",
+  cancelButtonColor: "#d33",
+  confirmButtonText: "Remove"
+}).then((result) => {
+  if (result.isConfirmed) {
+   let REMOVE_ID = ele.closest('.card').id;
+   let REMOVE_URL=`${BASE_URL}/posts/${REMOVE_ID}.json`;
+   localStorage.setItem('REMOVE_ID' ,REMOVE_ID);
+   makeApiCall('DELETE', REMOVE_URL);
+  }
+});
+}
+
+const removePost=(res)=>{
+    let REMOVE_ID = localStorage.getItem('REMOVE_ID');
+    let card = document.getElementById(REMOVE_ID).parentElement;
+    card.remove();
+}
+
+
 const makeApiCall = (methodeName, api_url, msgBody=null)=>{
     const xhr = new XMLHttpRequest();
     xhr.open(methodeName, api_url);
@@ -102,24 +129,26 @@ const makeApiCall = (methodeName, api_url, msgBody=null)=>{
                 if(res && typeof res === 'object' && !res.title){
                     let BlogArr = [];
                     for(const key in res) {
-                       BlogArr.unshift({...res[key], id:key})
+                       BlogArr.unshift({...res[key], id:key});
                     }
                     templating(BlogArr)
-                }
-            }else{
+                }else{
                 patchData(res)
             }
         }else if(methodeName === 'POST'){
             const id = res.name;
             createBlog({...msgBody, id})
               
-        }else if(methodeName=== 'PATCH'){
+        }else if(methodeName === 'PATCH'){
             updateOnUI(msgBody)
+        }else if(methodeName === 'DELETE'){
+              removePost(res);
         }
         else{
             snackbar('error', 'error')
         }
     }
+}
     let msg = msgBody?JSON.stringify(msgBody):null;
     xhr.send(msg)
 }
