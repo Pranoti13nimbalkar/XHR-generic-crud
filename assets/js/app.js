@@ -151,7 +151,7 @@ const makeApiCall = (methodeName, api_url, msgBody=null)=>{
 
         }else if(methodeName === 'DELETE'){
               removePost(res);
-              snackbar('Remove blog successfully!!', 'success');
+              snackbar('Remove blog  from UI successfully!!', 'success');
         }
         else{
             snackbar('error', 'error')
