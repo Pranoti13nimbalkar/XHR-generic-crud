@@ -32,12 +32,12 @@ const templating=(arr)=>{
                         <h4 class="m-0">${blog.userId} </h4>
                     </div>
                     <div class="card-body">
-                         <h4 class="m-0">${blog.title}</h4>
+                         <h5 class="m-0">${blog.title}</h5>
                          <p class="m-0">${blog.blogDesc}</p>
                     </div>
                     <div class="card-footer d-flex justify-content-between align-items-center">
-                           <i class="fa-solid fa-pen-to-square fa-2x text-success" role="button"></i>
-                           <i class="fa-solid fa-trash fa-2x text-danger" role="button"></i>
+                           <i onclick="onEdit(this)" class="fa-solid fa-pen-to-square fa-2x text-success" role="button"></i>
+                           <i onclick="onRemove(this)" class="fa-solid fa-trash fa-2x text-danger" role="button"></i>
                            <i class="fa-solid fa-thumbs-up fa-2x text-primary"></i>
                     </div>
                 </div>
@@ -47,6 +47,51 @@ const templating=(arr)=>{
     blogContainer.innerHTML =result;
 }
 
+const onEdit=(ele)=>{
+let EDIT_ID = ele.closest('.card').id;
+localStorage.setItem('EDIT_ID',EDIT_ID);
+let EDIT_URL=`${BASE_URL}/blogs/${EDIT_ID}.json`;
+makeApiCall('GET', EDIT_URL);
+}
+
+
+const patchData= (res)=>{
+    userNameControl.value= res.userName,
+    userIdControl.value = res.userId,
+    titleControl.value=res.title,
+    blogDescControl.value= res.title,
+    blogSubmitBtn.classList.add('d-none');
+    blogUpdateBtn.classList.remove('d-none')
+
+    window.scrollTo({top:0, behavior:'smooth'});
+}
+
+
+const onUpdateBLog=()=>{
+    let UPDATED_ID= localStorage.getItem('EDIT_ID');
+    let UPDATED_URL= `${BASE_URL}/blogs/${UPDATED_ID}.json`;
+    let UPDATED_OBJ={
+       userName:userNameControl.value,
+        userId: userIdControl.value,
+        title:titleControl.value,
+        blogDesc:blogDescControl.value,
+        id:UPDATED_ID
+    }
+    cl(UPDATED_OBJ);
+    blogForm.reset();
+    makeApiCall('PATCH', UPDATED_URL, UPDATED_OBJ)
+}
+
+const updateOnUI=(msgBody)=>{
+    let card= document.getElementById(msgBody.id);
+    let h3 =card.querySelector('h3').innerHTML=msgBody.userName;
+    let h4= card.querySelector('h4').innerHTML=msgBody.userId;
+    let h5= card.querySelector('h5').innerHTML=msgBody.title;
+    let p= card.querySelector('p').innerHTML= msgBody.blogDesc;
+     blogSubmitBtn.classList.remove('d-none');
+    blogUpdateBtn.classList.add('d-none')
+
+}
 const makeApiCall = (methodeName, api_url, msgBody=null)=>{
     const xhr = new XMLHttpRequest();
     xhr.open(methodeName, api_url);
@@ -62,12 +107,14 @@ const makeApiCall = (methodeName, api_url, msgBody=null)=>{
                     templating(BlogArr)
                 }
             }else{
-                // this GET for single
+                patchData(res)
             }
         }else if(methodeName === 'POST'){
             const id = res.name;
             createBlog({...msgBody, id})
               
+        }else if(methodeName=== 'PATCH'){
+            updateOnUI(msgBody)
         }
         else{
             snackbar('error', 'error')
@@ -86,7 +133,7 @@ const onSubmitBlog=(eve)=>{
         userName:userNameControl.value,
         userId: userIdControl.value,
         title:titleControl.value,
-        blogDesc:blogDescControl.value,
+        blogDesc:blogDescControl.value
     }
     cl(blogPostObj);
     blogForm.reset();
@@ -99,16 +146,16 @@ const createBlog =(blogPostObj)=>{
   col.innerHTML= `
                   <div class="card h-100" id= '${blogPostObj.id}'>
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h3 class="m-0">'${blogPostObj.userName}'</h3>
-                        <h4 class="m-0">'${blogPostObj.userId}' </h4>
+                        <h3 class="m-0">${blogPostObj.userName}</h3>
+                        <h4 class="m-0">${blogPostObj.userId} </h4>
                     </div>
                     <div class="card-body">
-                         <h4 class="m-0">'${blogPostObj.title}'</h4>
-                         <p class="m-0">'${blogPostObj.blogDesc}'</p>
+                         <h5 class="m-0">${blogPostObj.title}</h5>
+                         <p class="m-0">${blogPostObj.blogDesc}</p>
                     </div>
                     <div class="card-footer d-flex justify-content-between align-items-center">
-                           <i class="fa-solid fa-pen-to-square fa-2x text-success" role="button"></i>
-                           <i class="fa-solid fa-trash fa-2x text-danger" role="button"></i>
+                           <i onclick="onEdit(this)" class="fa-solid fa-pen-to-square fa-2x text-success" role="button"></i>
+                           <i onclick="onRemove(this)" class="fa-solid fa-trash fa-2x text-danger" role="button"></i>
                            <i class="fa-solid fa-thumbs-up fa-2x text-primary"></i>
                     </div>
                 </div>
@@ -117,4 +164,5 @@ const createBlog =(blogPostObj)=>{
   blogContainer.prepend(col);
 }
 
-blogForm.addEventListener('submit', onSubmitBlog)
+blogForm.addEventListener('submit', onSubmitBlog);
+blogUpdateBtn.addEventListener('click', onUpdateBLog)
