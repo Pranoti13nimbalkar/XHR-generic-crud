@@ -114,6 +114,7 @@ const createBlog =(blogPostObj)=>{
                 </div>
                   
   `
+  blogContainer.prepend(col);
 }
 
 blogForm.addEventListener('submit', onSubmitBlog)
