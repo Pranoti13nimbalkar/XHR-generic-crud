@@ -120,6 +120,7 @@ const removePost=(res)=>{
 
 
 const makeApiCall = (methodeName, api_url, msgBody=null)=>{
+    spinner.classList.remove('d-none')
     const xhr = new XMLHttpRequest();
     xhr.open(methodeName, api_url);
     xhr.onload= function(){
@@ -132,21 +133,31 @@ const makeApiCall = (methodeName, api_url, msgBody=null)=>{
                        BlogArr.unshift({...res[key], id:key});
                     }
                     templating(BlogArr)
+         snackbar('Blog fetched successfully!!', 'success');
+
                 }else{
                 patchData(res)
+             snackbar('Blog patched on form successfully!!', 'success');
+
             }
         }else if(methodeName === 'POST'){
             const id = res.name;
             createBlog({...msgBody, id})
-              
+     snackbar('New blog created  on UI successfully!!', 'success');
+
         }else if(methodeName === 'PATCH'){
             updateOnUI(msgBody)
+        snackbar('Update blog  on UI successfully!!', 'success');
+
         }else if(methodeName === 'DELETE'){
               removePost(res);
+              snackbar('Remove blog successfully!!', 'success');
         }
         else{
             snackbar('error', 'error')
         }
+            spinner.classList.add('d-none')
+
     }
 }
     let msg = msgBody?JSON.stringify(msgBody):null;
