@@ -38,7 +38,9 @@ const templating=(arr)=>{
                     <div class="card-footer d-flex justify-content-between align-items-center">
                            <i onclick="onEdit(this)" class="fa-solid fa-pen-to-square fa-2x text-success" role="button"></i>
                            <i onclick="onRemove(this)" class="fa-solid fa-trash fa-2x text-danger" role="button"></i>
-                           <i class="fa-solid fa-thumbs-up fa-2x text-primary"></i>
+                           <i  onclick="onLike(this)" class="fa-solid fa-thumbs-up fa-2x text-primary"></i>
+                         <span class="ms-2 like-count">${blog.like || 0}</span>
+
                     </div>
                 </div>
             </div>
@@ -46,6 +48,26 @@ const templating=(arr)=>{
     });
     blogContainer.innerHTML =result;
 }
+
+const onLike = (ele) => {
+    let card = ele.closest('.card');
+    let blogId = card.id;
+    let likeCountSpan = card.querySelector('.like-count');
+    let currentLikes = parseInt(likeCountSpan.innerText) || 0;
+    let updatedLikes = currentLikes + 1;
+
+    let updateObj = {
+        like: updatedLikes
+    };
+
+    let likeUrl = `${BASE_URL}/posts/${blogId}.json`;
+
+    makeApiCall('PATCH', likeUrl, updateObj);
+
+    // Optional: Update UI instantly
+    likeCountSpan.innerText = updatedLikes;
+};
+
 
 const onEdit=(ele)=>{
 let EDIT_ID = ele.closest('.card').id;
@@ -60,7 +82,7 @@ const patchData= (res)=>{
     userNameControl.value= res.userName,
     userIdControl.value = res.userId,
     titleControl.value=res.title,
-    blogDescControl.value= res.title,
+    blogDescControl.value= res.blogDesc,
     blogSubmitBtn.classList.add('d-none');
     blogUpdateBtn.classList.remove('d-none')
 
@@ -144,12 +166,14 @@ const makeApiCall = (methodeName, api_url, msgBody=null)=>{
             const id = res.name;
             createBlog({...msgBody, id})
      snackbar('New blog created  on UI successfully!!', 'success');
-
-        }else if(methodeName === 'PATCH'){
-            updateOnUI(msgBody)
-        snackbar('Update blog  on UI successfully!!', 'success');
-
-        }else if(methodeName === 'DELETE'){
+        }else if (methodeName === 'PATCH') {
+    if (msgBody.like !== undefined && Object.keys(msgBody).length === 1) {
+        snackbar('Liked!', 'success');
+    } else {
+        updateOnUI(msgBody);
+        snackbar('Update blog on UI successfully!!', 'success');
+    }
+   }else if(methodeName === 'DELETE'){
               removePost(res);
               snackbar('Remove blog  from UI successfully!!', 'success');
         }
@@ -173,7 +197,8 @@ const onSubmitBlog=(eve)=>{
         userName:userNameControl.value,
         userId: userIdControl.value,
         title:titleControl.value,
-        blogDesc:blogDescControl.value
+        blogDesc:blogDescControl.value,
+        like:0
     }
     cl(blogPostObj);
     blogForm.reset();
@@ -196,7 +221,9 @@ const createBlog =(blogPostObj)=>{
                     <div class="card-footer d-flex justify-content-between align-items-center">
                            <i onclick="onEdit(this)" class="fa-solid fa-pen-to-square fa-2x text-success" role="button"></i>
                            <i onclick="onRemove(this)" class="fa-solid fa-trash fa-2x text-danger" role="button"></i>
-                           <i class="fa-solid fa-thumbs-up fa-2x text-primary"></i>
+                           <i onclick="onLike(this)"  class="fa-solid fa-thumbs-up fa-2x text-primary"></i>
+                         <span class="ms-2 like-count">${blogPostObj.like || 0}</span>
+
                     </div>
                 </div>
                   
